@@ -60,11 +60,15 @@ public class InitialUI extends JPanel {
     private ClientHandler clientHandler;
     private StartHandler startHandler;
 
+    protected GameUI gameUI;
+
+
     public InitialUI() {
         isEng = true;
-        isConnected = true;
-        isServer = true;
+        isConnected = false;
+        isServer = false;
         pTextF.setText("testing");
+        serverAddrTextF.setText("localhost");
 
         URL imageUrl = Objects.requireNonNull(getClass().getResource("/resources/image/right-arrow.png"));
         ImageIcon imgIcon = new ImageIcon(imageUrl);
@@ -74,6 +78,8 @@ public class InitialUI extends JPanel {
         this.playButton.setEnabled(false);
 
         firstPlayer = -1;
+
+        gameUI = new GameUI();
 
         initListener();
         initClient();
@@ -102,26 +108,27 @@ public class InitialUI extends JPanel {
         statusfield.setText("Disconnected and waiting for connection.");
 
         statusfield.addPropertyChangeListener(evt -> {
-            playButton.setEnabled(isConnected && isServer && !pTextF.getText().isEmpty());
+            playButton.setEnabled(isConnected && !pTextF.getText().isEmpty());
         });
 
-        startHandler = new StartHandler();
+        startHandler = new StartHandler(gameUI);
         playButton.addActionListener(startHandler);
     }
 
     private void initClient() {
-        connectBtn.setEnabled(false);
+//        connectBtn.setEnabled(false);
         serverPortTextF_C.setText(DEFAULT_PORT);
         clientHandler = new ClientHandler(
                 this,
                 serverAddrTextF.getText().trim(),
                 serverPortTextF_C.getText().trim(),
                 startServerBtn,
-                statusfield
-                );
+                statusfield,
+                gameUI
+        );
         connectBtn.addActionListener(clientHandler);
         clientInfoListener = new ClientInfoListener(this.serverAddrTextF, this.serverPortTextF_C,
-                                                    this.connectBtn, this.clientHandler);
+                this.connectBtn, this.clientHandler);
         serverAddrTextF.getDocument().addDocumentListener(clientInfoListener);
         serverPortTextF_C.getDocument().addDocumentListener(clientInfoListener);
     }
@@ -133,7 +140,7 @@ public class InitialUI extends JPanel {
         serverPortTextF.setFormatterFactory(formatterFactory);
         serverPortTextF.setText(DEFAULT_PORT);
 
-        serverHandler = new ServerHandler(this, serverPortTextF.getText().trim(), connectBtn);
+        serverHandler = new ServerHandler(this, serverPortTextF.getText().trim(), connectBtn, gameUI);
         startServerBtn.addActionListener(serverHandler);
 
         portChangeListener = new PortChangeListener(this.serverPortTextF, this.startServerBtn, serverHandler);
@@ -167,7 +174,6 @@ public class InitialUI extends JPanel {
             Random rand = new Random();
             rand.setSeed(System.currentTimeMillis());
             int choice = rand.nextInt(2);
-            System.out.println(choice);
             this.firstPlayComB.setSelectedIndex(choice);
             this.firstPlayComB.setEnabled(false);
             firstPlayer = choice;
@@ -175,6 +181,26 @@ public class InitialUI extends JPanel {
             this.firstPlayComB.setEnabled(true);
             firstPlayer = -1;
         }
+    }
+
+    public String getPlayerName() {
+        return this.pTextF.getText().trim();
+    }
+
+    public String getTurnTime() {
+        return (String) this.timeTurnComB.getSelectedItem();
+    }
+
+    public String getPlayerTime() {
+        return (String) this.timePlayerComB.getSelectedItem();
+    }
+
+    public int getFirstPlayer() {
+        return this.firstPlayComB.getSelectedIndex() == 0 ? 1 : 2;
+    }
+
+    public String getWithdrawCount() {
+        return (String) this.withdrawComB.getSelectedItem();
     }
 
     public void setServerState(boolean state) {
@@ -193,13 +219,21 @@ public class InitialUI extends JPanel {
         return isConnected;
     }
 
+    public JButton getConnectBtn() {
+        return (JButton) this.connectBtn;
+    }
+
+    public JButton getStartServerBtn() {
+        return (JButton) this.startServerBtn;
+    }
+
     public void setStatusText(String status) {
         statusfield.setText(status);
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("InitialUI");
+            JFrame frame = new JFrame("Gomoku Game");
             InitialUI initialUI = new InitialUI();
             frame.setContentPane(initialUI);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

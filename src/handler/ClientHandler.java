@@ -1,5 +1,6 @@
 package handler;
 
+import ui.GameUI;
 import ui.InitialUI;
 
 import javax.swing.*;
@@ -9,21 +10,24 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientHandler implements ActionListener {
-    private final InitialUI initUI;
+    private static InitialUI initUI;
+    private static GameUI gameUI;
     private String ADDRESS;//ip
     private int PORT;//port
     private static Socket client;
-    private static ServerListener listener;
     private static ClientThread clientThread;
-    private JButton startServerBtn;
-    private JLabel statusField;
-    private boolean isConnected;
+    private final JButton startServerBtn;
+    private final JLabel statusField;
+    private static boolean isConnected;
 
-    public ClientHandler(InitialUI initUI, String address, String port, JButton startServerBtn, JLabel statusField) {
-        this.initUI = initUI;
+    private static Controller controller;
+
+    public ClientHandler(InitialUI initUi, String address, String port, JButton startServerBtn, JLabel statusField,
+                         GameUI gameUi) {
+        initUI = initUi;
+        gameUI = gameUi;
         this.ADDRESS = address;
         this.PORT = Integer.parseInt(port);
-        this.isConnected = isConnected;
         this.startServerBtn = startServerBtn;
         this.statusField = statusField;
     }
@@ -40,12 +44,14 @@ public class ClientHandler implements ActionListener {
         startServerBtn.setEnabled(!initUI.getClientState());
     }
 
+
     @Override
     public void actionPerformed(ActionEvent e) {
         JButton button = (JButton) e.getSource();
 
         if (button.getText().equals("Connect")) {
-            if (!isConnected && clientThread == null) {
+            if (clientThread != null) clientThread = null;
+            if (!isConnected) {
                 clientThread = new ClientThread(ADDRESS, PORT);
                 clientThread.start();
                 try {
@@ -55,7 +61,7 @@ public class ClientHandler implements ActionListener {
                 }
                 if (client != null && clientThread != null) {
                     button.setText("Disconnect");
-                    this.initUI.setClientState(true);
+                    initUI.setClientState(true);
                     statusField.setText("Connected to server: Address(" + ADDRESS + ") " + "Port(" + PORT + ")");
                     JOptionPane.showMessageDialog(null, "Connect to the server.",
                             "Connection Success", JOptionPane.INFORMATION_MESSAGE);
@@ -87,7 +93,7 @@ public class ClientHandler implements ActionListener {
                 }
             }
             statusField.setText("Disconnected and waiting for connection.");
-            this.initUI.setClientState(false);
+            initUI.setClientState(false);
         }
         setStartServerBtn();
     }
@@ -105,63 +111,52 @@ public class ClientHandler implements ActionListener {
             try {
                 client = new Socket(ADDRESS, PORT);
 
-                PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-                out.println("isConnected");
+                controller = new Controller(initUI, gameUI, client, false);
 
                 System.out.println("Connection: " + client);
 
-                listener = new ServerListener(client);
-                listener.start();
+                GameData data = new GameData(
+                        "1",
+                        initUI.getPlayerName(),
+                        initUI.getTurnTime(),
+                        initUI.getPlayerTime(),
+                        initUI.getFirstPlayer(),
+                        initUI.getWithdrawCount()
+                );
 
-                Console console = System.console();
-                String userInput;
-                System.out.print("Me: ");
-                while ((userInput = console.readLine()) != null) {
-                    if (userInput.contains("This server is already connected with other client")) {
-                        System.out.println(listener.isAlive());
-                        listener.interrupt();
-                        System.out.println(listener.isAlive());
-                    }
-                    out.println(userInput);
+                controller.setGameData(data);
 
-                    if (userInput.contains("bye")) {
-                        out.println("disConnected");
-                        break;
+//                listener = new ServerListener(client);
+//                listener.start();
+                controller.requestInit(GameFlags.CLIENT_INIT);
+
+                BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                String response;
+                while ((response = in.readLine()) != null) {
+                    System.out.println("Response:" + response);
+                    controller.processMessage(response);
+                    if (response.contains("This server is already connected with other client")) {
+                        System.out.println(isAlive());
+                        interrupt();
+                        System.out.println(isAlive());
                     }
                 }
 
             } catch(IOException ie) {
                 System.out.println(ie.getMessage());
-            }
-            finally {
+            } finally {
                 try {
-                    if (client != null) client.close();
-                } catch (IOException ie) {
-                    System.out.println(ie.getMessage());
+                    if (client != null) {
+                        client.close();
+                    }
+                    isConnected = false;
+                    interrupt();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
+
         }
 
     }
-
-    private static class ServerListener extends Thread{
-        private final Socket client;
-        public ServerListener(Socket client) {
-            this.client = client;
-        }
-
-        @Override
-        public void run() {
-            try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                String response;
-                while ((response = in.readLine()) != null) {
-                    System.out.println(response);
-                }
-            } catch(IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-    }
-
 }

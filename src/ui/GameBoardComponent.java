@@ -1,17 +1,21 @@
 package ui;
 
 import handler.ButtonHandler;
+import handler.Controller;
+import handler.TimeManager;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;
 
 public class GameBoardComponent extends JPanel {
+    private final GameUI gameUI;
     private final int ROW = 15;
     private final int COL = 15;
     private final String RED_FLAG_URL = "/resources/image/redflag.png";
     protected JButton[][] buttons;
-    public boolean isBlackTurn;
+    public boolean isBlack;
+    public boolean canPlay;
     public JLabel p1Flag, p2Flag;
     private ImageIcon flagIcon;
     private Image flagImg;
@@ -19,14 +23,31 @@ public class GameBoardComponent extends JPanel {
     private static final int ICON_HEIGHT = 30;
     private final ButtonHandler buttonHandler;
 
+    private int player;
+    private TimeManager timeManager;
+    private JLabel p1TurnTime;
+    private JLabel p2TurnTime;
+    private JLabel p1PlayerTime;
+    private JLabel p2PlayerTime;
+    private int turnTime;
+    private int playerTime;
 
-    public GameBoardComponent(JLabel p1Flag, JLabel p2Flag) {
+    public Controller controller;
+
+    public GameBoardComponent(GameUI gameUI, JLabel p1Flag, JLabel p2Flag, JLabel p1TurnTime, JLabel p2TurnTime,
+                              JLabel p1PlayerTime, JLabel p2PlayerTime) {
         setLayout(null);
-        isBlackTurn = true;
+        isBlack = true;
         buttons = new JButton[ROW][COL];
+        this.gameUI = gameUI;
         this.p1Flag = p1Flag;
         this.p2Flag = p2Flag;
         buttonHandler = new ButtonHandler(this);
+        this.p1TurnTime = p1TurnTime;
+        this.p2TurnTime = p2TurnTime;
+        this.p1PlayerTime = p1PlayerTime;
+        this.p2PlayerTime = p2PlayerTime;
+        this.timeManager = new TimeManager(this, p1TurnTime, p2TurnTime, p1PlayerTime, p2PlayerTime);
         initializeButtons();
         initializeIcon();
     }
@@ -34,9 +55,7 @@ public class GameBoardComponent extends JPanel {
     private void initializeIcon() {
         flagIcon = new ImageIcon(Objects.requireNonNull(getClass().getResource(RED_FLAG_URL)));
         flagImg = flagIcon.getImage().getScaledInstance(ICON_WIDTH, ICON_HEIGHT, Image.SCALE_SMOOTH);
-        this.p2Flag.setIcon(null);
-        this.p1Flag.setIcon(null);
-        this.p1Flag.setIcon(new ImageIcon(flagImg));
+        setFlagIcon(1);
     }
 
     private void initializeButtons() {
@@ -51,7 +70,9 @@ public class GameBoardComponent extends JPanel {
 
                 button.putClientProperty("loc", new int[] {i, j});
 
-//                button.addActionListener(e -> handleButtonClick(row, col));
+//                int finalJ = j;
+//                int finalI = i;
+//                button.addActionListener(e -> handleButtonClick(finalI, finalJ));
                 button.addActionListener(buttonHandler);
 
                 buttons[i][j] = button;
@@ -60,20 +81,115 @@ public class GameBoardComponent extends JPanel {
         }
     }
 
+    public void clearButtonIcons() {
+        for (JButton[] row : buttons) {
+            for (JButton button : row) {
+                button.setIcon(null);
+            }
+        }
+    }
+
+    public void setController(Controller controller) {
+        this.controller = controller;
+    }
+
+    public void setCanPlay(boolean canPlay) {
+        this.canPlay = canPlay;
+        if (gameUI.getIsGameStarted()) {
+            if (canPlay) {
+                timeManager.startTimer(this.turnTime, this.playerTime * 60);
+            } else {
+                timeManager.stopTimer();
+                timeManager.resetTurnTime();
+            }
+        }
+    }
+
+    public boolean getCanPlay() {
+        return this.canPlay;
+    }
+
+    public void setIsBlack(boolean isBlack) {
+        this.isBlack = isBlack;
+    }
+
+    public void setPlayer() {
+        this.player = this.isBlack ? 1 : 2;
+    }
+
+    public int getPlayer() {
+        return this.player;
+    }
+
+    public void setTurnTime(int turnTime) {
+        this.turnTime = turnTime;
+    }
+
+    public void setPlayerTime(int playerTime) {
+        this.playerTime = playerTime;
+    }
+
+    public void setFlagIcon(int player) {
+        if (player == 1) {
+            this.p2Flag.setIcon(null);
+            this.p1Flag.setIcon(new ImageIcon(flagImg));
+        }
+        else {
+            this.p1Flag.setIcon(null);
+            this.p2Flag.setIcon(new ImageIcon(flagImg));
+        }
+    }
+
+    public void clearPosition(int row, int col) {
+        if (row != -1 && col != -1) {
+            JButton button = this.buttons[row][col];
+            button.setIcon(null);
+        }
+    }
+
+    public void endGame() {
+        timeManager.stopTimer();
+    }
+
+    public void updateTurnTime(int turnTime) {
+        timeManager.setTurnTime(turnTime);
+    }
+
+    public void updatePlayerTime(int playerTime) {
+        timeManager.setPlayerTime(playerTime);
+    }
+
+    public void updateGameBoard(int player, int row, int col) {
+        JButton button = buttons[row][col];
+
+        if (button.getIcon() == null) {
+            ImageIcon icon;
+            if (player == 1) {
+                icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/resources/image/black.png")));
+            }
+            else {
+                icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/resources/image/white.png")));
+            }
+            Image img = icon.getImage().getScaledInstance(35, 35, Image.SCALE_SMOOTH);
+            button.setIcon(new ImageIcon(img));
+            setFlagIcon(player == 1 ? 2 : 1);
+        }
+    }
+
     @Override
     public void doLayout() {
         super.doLayout();
-        int size = Math.min(getWidth(), getHeight()) / (ROW + 1);
+        int size = Math.min(getWidth(), getHeight()) / (ROW + 2);
         int x0 = (getWidth() - (COL - 1) * size) / 2;
-        int y0 = (getHeight() - (ROW - 1) * size) / 2;
+        int y0 = (getHeight() - (ROW - 1) * size) / 2 - size / 3;
 
         // Position buttons on intersections
         for (int i = 0; i < ROW; i++) {
             for (int j = 0; j < COL; j++) {
                 JButton button = buttons[i][j];
                 button.setLocation(
-                x0 + j * size - button.getWidth() / 2,
-                y0 + i * size - button.getHeight() / 2
+                    x0 + j * size - button.getWidth() / 2,
+                    y0 + i * size - button.getHeight() / 2
                 );
             }
         }
@@ -82,18 +198,25 @@ public class GameBoardComponent extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        int size = Math.min(getWidth(), getHeight()) / (ROW + 1);
+        int size = Math.min(getWidth(), getHeight()) / (ROW + 2);
         int x0 = (getWidth() - (COL - 1) * size) / 2;
-        int y0 = (getHeight() - (ROW - 1) * size) / 2;
+        int y0 = (getHeight() - (ROW - 1) * size) / 2 - size / 3;
 
+    
         g.setColor(Color.BLACK);
+        
         // Draw horizontal lines
         for (int i = 0; i < ROW; i++) {
             g.drawLine(x0, y0 + i * size, x0 + (COL - 1) * size, y0 + i * size);
+            // Draw numbers 1-15 on the left side
+            g.drawString(String.valueOf(i + 1), x0 - 40, y0 + i * size + 5);
         }
+        
         // Draw vertical lines
         for (int i = 0; i < COL; i++) {
             g.drawLine(x0 + i * size, y0, x0 + i * size, y0 + (ROW - 1) * size);
+            // Draw letters A-O at the bottom
+            g.drawString(Character.toString((char)('A' + i)), x0 + i * size - 5, y0 + ROW * size + 5);
         }
     }
 }

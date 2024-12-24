@@ -1,6 +1,7 @@
 package handler;
 
 import ui.InitialUI;
+import ui.GameUI;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -12,14 +13,18 @@ import java.net.Socket;
 public class ServerHandler implements ActionListener {
 
     private static InitialUI initUi;
+    private static GameUI gameUI;
     private static boolean isClientConnected = false;
     private static ServerSocket serverSocket;
     private int PORT;
     private static ServerThread serverThread;
     private JButton connectButton;
 
-    public ServerHandler(InitialUI ui, String PORT, JButton connectButton) {
+    private static Controller controller;
+
+    public ServerHandler(InitialUI ui, String PORT, JButton connectButton, GameUI gameUi) {
         initUi = ui;
+        gameUI = gameUi;
         this.PORT = Integer.parseInt(PORT);
         this.connectButton = connectButton;
     }
@@ -35,40 +40,46 @@ public class ServerHandler implements ActionListener {
 
     public static class HandleClient extends Thread {
         private final Socket client;
-
-        public HandleClient(Socket client) throws IOException {
+        private boolean isGameStarted = false;
+        private final ServerSocket serverSocket;
+        private final Thread serverThread;
+        public HandleClient(Socket client, ServerSocket serverSocket, Thread serverThread) throws IOException {
             this.client = client;
+            this.serverSocket = serverSocket;
+            this.serverThread = serverThread;
         }
 
         @Override
         public void run() {
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-                PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-//                BufferedWriter out = new BufferedWriter(new OutputStreamWriter(client.getOutputStream()));
-                out.println("Connect to server successfully");
-//                out.newLine();
-//                out.flush();
+
+                controller = new Controller(initUi, gameUI, client, true);
+
+                GameData data = new GameData(
+                        "2",
+                        initUi.getPlayerName(),
+                        initUi.getTurnTime(),
+                        initUi.getPlayerTime(),
+                        initUi.getFirstPlayer(),
+                        initUi.getWithdrawCount()
+                );
+
+                controller.setGameData(data);
+
+                controller.requestInit(GameFlags.SERVER_INIT);
 
                 String text;
 
                 while ((text = in.readLine()) != null) {
                     System.out.println("Client sent: " + text);
-                    // out.println("Server received: " + text);
-                    if (text.equals("bye")) {
-                        out.println("Server: bye!");
-//                        out.newLine();
-//                        out.flush();
-                        break;
-                    }
-
                     if (text.equalsIgnoreCase("disConnected")) {
                         initUi.setClientState(false);
                         initUi.setStatusText("Waiting player to join...");
+                        break;
                     }
-                    out.println("Server received: " + text);
+                    controller.processMessage(text);
                 }
-                client.close();
             }
             catch(IOException e) {
                 System.out.println(e.getMessage());
@@ -76,6 +87,9 @@ public class ServerHandler implements ActionListener {
             finally {
                 try {
                     client.close();
+                    serverSocket.close();
+                    interrupt();
+                    serverThread.interrupt();
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -117,7 +131,7 @@ public class ServerHandler implements ActionListener {
                         System.out.println("A new client is connected : " + client);
                         initUi.setClientState(true);
                         initUi.setStatusText("Player " + client + " is connected.");
-                        new HandleClient(client).start();
+                        new HandleClient(client, serverSocket, currentThread()).start();
                     }
                 }
             } catch (IOException ie) {
@@ -126,7 +140,7 @@ public class ServerHandler implements ActionListener {
             finally {
                 try {
                     serverSocket.close();
-
+                    interrupt();
                 } catch (IOException ie) {
                     System.out.println(ie.getMessage());
                 }

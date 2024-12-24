@@ -35,10 +35,9 @@ public class TextChangeListener implements DocumentListener {
 
     private void checkEnabled() {
         String pName = pTextF.getText().trim();
-        boolean isServer = initUI.getServerState();
         boolean isConnected = initUI.getClientState();
 
-        startButton.setEnabled(isConnected && isServer && !pName.isEmpty());
+        startButton.setEnabled(isConnected && !pName.isEmpty());
     }
 
 }
