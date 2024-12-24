@@ -22,6 +22,11 @@ public class WithdrawHandler implements ActionListener{
 
         if (res == JOptionPane.YES_OPTION) {
             System.out.println("Withdraw!");
+            if (gameUI.gameBoardComponent.getCanPlay()) {
+                JOptionPane.showMessageDialog(null, "Withdraw DENIED", "Withdraw",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
             if (gameUI.getWithdrawCount() > 0 || gameUI.getWithdrawCount() == -1) {
                 gameUI.controller.sendMessage(GameFlags.WITHDRAW);
             }

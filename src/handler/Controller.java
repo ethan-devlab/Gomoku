@@ -4,6 +4,7 @@ import ui.*;
 
 import java.io.*;
 import java.net.Socket;
+import java.security.interfaces.RSAPrivateCrtKey;
 
 
 public class Controller {
@@ -78,13 +79,7 @@ public class Controller {
                 out.println(GameFlags.START);
                 break;
             case GameFlags.START:
-                isGameStarted = true;
-                if (isServer && gameUI.getFirstPlayer() == 1) {
-                    gameUI.gameBoardComponent.setCanPlay(true);
-                }
-                else if (!isServer && gameUI.getFirstPlayer() == 2) {
-                    gameUI.gameBoardComponent.setCanPlay(true);
-                }
+                handleStart();
                 break;
             case GameFlags.WITHDRAW:
                 if (data.equals("OK")) requestWithdraw();
@@ -165,7 +160,8 @@ public class Controller {
         gameUI.gameBoardComponent.setIsBlack(isBlack);
         gameUI.gameBoardComponent.setPlayer();
         gameUI.gameBoardComponent.setTurnTime(Integer.parseInt(turnTime));
-        gameUI.gameBoardComponent.setPlayerTime(Integer.parseInt(playerTime));
+        gameUI.gameBoardComponent.setPlayerTime(!playerTime.equals("-1") ? Double.parseDouble(playerTime) * 60 : -1);
+        gameUI.gameBoardComponent.setConstantTime(Integer.parseInt(turnTime));
         out.println(GameFlags.READY);
     }
 
@@ -195,6 +191,16 @@ public class Controller {
                     if (player == gameUI.getPlayerFlag()) out.println("CAN_PLAY");
                 }
             }
+        }
+    }
+
+    private void handleStart() {
+        isGameStarted = true;
+        if (isServer && gameUI.getFirstPlayer() == 1) {
+            gameUI.gameBoardComponent.setCanPlay(true);
+        }
+        else if (!isServer && gameUI.getFirstPlayer() == 2) {
+            gameUI.gameBoardComponent.setCanPlay(true);
         }
     }
 
@@ -252,7 +258,7 @@ public class Controller {
     }
 
     private void handlePlayerTime(String data) {
-        int time = Integer.parseInt(data);
+        double time = Double.parseDouble(data);
         gameUI.gameBoardComponent.updatePlayerTime(time);
     }
 
@@ -275,6 +281,7 @@ public class Controller {
             if (in != null) in.close();
             if (socket != null) socket.close();
             gameUI.gameBoardComponent.clearButtonIcons();
+            gameUI.gameBoardComponent.setCanPlay(false);
             gameUI.setGameStarted(false);
             if (gameUI.getCurrentFrame() != null) gameUI.getCurrentFrame().dispose();
             if (!isServer) {

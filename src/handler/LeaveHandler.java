@@ -15,7 +15,8 @@ public class LeaveHandler implements ActionListener{
     }
 
     public void actionPerformed(ActionEvent e) {
-        int res = JOptionPane.showConfirmDialog(null, "Now leaving will make disconnected to server.",
+        int res = JOptionPane.showConfirmDialog(null,
+                "Leaving now will cause data lost and disconnection.",
                 "Leave", JOptionPane.YES_NO_OPTION);
 
         if (res == JOptionPane.YES_OPTION) {

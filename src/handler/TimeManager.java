@@ -3,7 +3,7 @@ package handler;
 import ui.GameBoardComponent;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
+import java.util.concurrent.TimeUnit;
 
 public class TimeManager {
     private final GameBoardComponent gameBoardComponent;
@@ -11,7 +11,7 @@ public class TimeManager {
     private Timer playerTimer;
     private int TURNTIME;
     private int turnTimeLeft;
-    private int playerTimeLeft;
+    private double playerTimeLeft;
     private final JLabel p1TurnTime;
     private final JLabel p2TurnTime;
     private final JLabel p1PlayerTime;
@@ -35,13 +35,14 @@ public class TimeManager {
                 gameBoardComponent.setCanPlay(false);
                 gameBoardComponent.controller.sendMessage(GameFlags.LOSE + ":" + gameBoardComponent.getPlayer());
                 showTimeout("TimeOut! You lose!");
-                stopTimer();
+                stopAll();
             }
         });
 
         playerTimer = new Timer(1000, e -> {
             if (playerTimeLeft > 0) {
-                this.gameBoardComponent.setPlayerTime(--playerTimeLeft / 60 + playerTimeLeft % 60);
+                gameBoardComponent.setPlayerTime(--playerTimeLeft);
+//                double time = playerTimeLeft / 60.0 + playerTimeLeft % 60.0 / 10.0;
                 String message = GameFlags.PLAYER_TIME + ":" + playerTimeLeft;
                 gameBoardComponent.controller.sendMessage(message);
                 updatePlayerTimeLabel();
@@ -49,47 +50,63 @@ public class TimeManager {
                 gameBoardComponent.setCanPlay(false);
                 gameBoardComponent.controller.sendMessage(GameFlags.LOSE + ":" + gameBoardComponent.getPlayer());
                 showTimeout("TimeOut! You lose!");
-                stopTimer();
+                stopAll();
             }
         });
     }
 
+    private String formatTime(double timeInSeconds) {
+        return String.format("%dm %ds", (int) timeInSeconds / 60, (int) timeInSeconds % 60);
+    }
+
     private void updateTurnTimeLabel() {
-        if (this.gameBoardComponent.getPlayer() == 1) {
-            p1TurnTime.setText(String.format("%ds", turnTimeLeft));
-        }
-        else {
-            p2TurnTime.setText(String.format("%ds", turnTimeLeft));
-        }
+        JLabel activeLabel = (gameBoardComponent.getPlayer() == 1) ?
+                (gameBoardComponent.getCanPlay() ? p1TurnTime : p2TurnTime) :
+                (gameBoardComponent.getCanPlay() ? p2TurnTime : p1TurnTime);
+        activeLabel.setText(String.format("%ds", turnTimeLeft));
     }
 
     private void updatePlayerTimeLabel() {
-        if (this.gameBoardComponent.getPlayer() == 1) {
-            p1PlayerTime.setText(String.format("%dm %ds", playerTimeLeft / 60, playerTimeLeft % 60));
-        }
-        else {
-            p2PlayerTime.setText(String.format("%dm %ds", playerTimeLeft / 60, playerTimeLeft % 60));
-        }
+        JLabel activeLabel = (gameBoardComponent.getPlayer() == 1) ? 
+            (gameBoardComponent.getCanPlay() ? p1PlayerTime : p2PlayerTime) :
+            (gameBoardComponent.getCanPlay() ? p2PlayerTime : p1PlayerTime);
+            
+        activeLabel.setText(formatTime(playerTimeLeft));
     }
 
-    public void resetTurnTime() {
+    public void resetTurnTime(boolean isSelf) {
         turnTimeLeft = TURNTIME;
-        updateTurnTimeLabel();
+        JLabel activeLabel = (gameBoardComponent.getPlayer() == 1) ? p1TurnTime : p2TurnTime;
+        activeLabel.setText(String.format("%ds", turnTimeLeft));
+        if (isSelf) { // reset opponent turn time
+            activeLabel = (gameBoardComponent.getPlayer() == 1) ? p2TurnTime : p1TurnTime;
+            activeLabel.setText(String.format("%ds", turnTimeLeft));
+        }
     }
 
-    public void startTimer(int turnTime, int playerTime) {
+    public void startTurnTimer(int turnTime) {
         this.turnTimeLeft = turnTime;
-        this.playerTimeLeft = playerTime;
-        TURNTIME = turnTime;
         updateTurnTimeLabel();
-        updatePlayerTimeLabel();
         turnTimer.start();
+    }
+
+    public void startPlayerTimer(double playerTime) {
+        this.playerTimeLeft = playerTime;
+        updatePlayerTimeLabel();
         playerTimer.start();
     }
 
-    public void stopTimer() {
+    public void stopTurnTimer() {
         turnTimer.stop();
+    }
+
+    public void stopPlayerTimer() {
         playerTimer.stop();
+    }
+
+    public void stopAll() {
+        stopTurnTimer();
+        stopPlayerTimer();
     }
 
     public void setTurnTime(int turnTime) {
@@ -97,12 +114,17 @@ public class TimeManager {
         updateTurnTimeLabel();
     }
 
-    public void setPlayerTime(int playerTime) {
+    public void setPlayerTime(double playerTime) {
         this.playerTimeLeft = playerTime;
         updatePlayerTimeLabel();
+    }
+
+    public void setConstantTime(int constantTime) {
+        TURNTIME = constantTime;
     }
 
     public void showTimeout(String message) {
         JOptionPane.showMessageDialog(null, message, "Timeout", JOptionPane.WARNING_MESSAGE);
     }
+
 }

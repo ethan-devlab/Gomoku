@@ -30,7 +30,7 @@ public class GameBoardComponent extends JPanel {
     private JLabel p1PlayerTime;
     private JLabel p2PlayerTime;
     private int turnTime;
-    private int playerTime;
+    private double playerTime;
 
     public Controller controller;
 
@@ -95,12 +95,29 @@ public class GameBoardComponent extends JPanel {
 
     public void setCanPlay(boolean canPlay) {
         this.canPlay = canPlay;
-        if (gameUI.getIsGameStarted()) {
-            if (canPlay) {
-                timeManager.startTimer(this.turnTime, this.playerTime * 60);
-            } else {
-                timeManager.stopTimer();
-                timeManager.resetTurnTime();
+        
+        if (!gameUI.getIsGameStarted()) {
+            return;
+        }
+
+        boolean hasTurnTime = turnTime != -1;
+        boolean hasPlayerTime = playerTime != -1;
+
+        if (canPlay) {
+            if (hasTurnTime) {
+                timeManager.startTurnTimer(this.turnTime);
+                timeManager.resetTurnTime(true);
+            }
+            if (hasPlayerTime) {
+                timeManager.startPlayerTimer(this.playerTime);
+            }
+        } else {
+            if (hasTurnTime) {
+                timeManager.stopTurnTimer();
+                timeManager.resetTurnTime(false);
+            }
+            if (hasPlayerTime) {
+                timeManager.stopPlayerTimer();
             }
         }
     }
@@ -125,8 +142,12 @@ public class GameBoardComponent extends JPanel {
         this.turnTime = turnTime;
     }
 
-    public void setPlayerTime(int playerTime) {
+    public void setPlayerTime(double playerTime) {
         this.playerTime = playerTime;
+    }
+
+    public void setConstantTime(int constantTime) {
+        timeManager.setConstantTime(constantTime);
     }
 
     public void setFlagIcon(int player) {
@@ -147,15 +168,11 @@ public class GameBoardComponent extends JPanel {
         }
     }
 
-    public void endGame() {
-        timeManager.stopTimer();
-    }
-
     public void updateTurnTime(int turnTime) {
         timeManager.setTurnTime(turnTime);
     }
 
-    public void updatePlayerTime(int playerTime) {
+    public void updatePlayerTime(double playerTime) {
         timeManager.setPlayerTime(playerTime);
     }
 

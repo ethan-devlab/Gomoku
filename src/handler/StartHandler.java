@@ -18,12 +18,13 @@ public class StartHandler implements ActionListener {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Gomoku Game");
             gameUI.setCurrentFrame(frame);
+            gameUI.setGameStarted(true);
+            gameUI.gameBoardComponent.setCanPlay(gameUI.gameBoardComponent.getCanPlay());
             frame.setContentPane(gameUI);
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             frame.setSize(800, 800);
             frame.setLocationRelativeTo(null); // make center
             frame.setVisible(true);
-            gameUI.setGameStarted(true);
         });
     }
 

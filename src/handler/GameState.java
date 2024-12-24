@@ -84,10 +84,6 @@ public class GameState {
         return false;
     }
     
-    public boolean canWithdraw() {
-        return withdrawCount > 0;
-    }
-    
     public boolean withdrawMove(boolean isSelf) {
         if (withdrawCount > 0 || withdrawCount == -1 && lastRow != -1 && lastCol != -1) {
             board[lastRow][lastCol] = 0;

@@ -43,10 +43,6 @@ public class InitialUI extends JPanel {
     private JLabel withdrawLabel;
     String[] playerItems = new String[]{"Black", "White"};
 
-    private int firstPlayer;
-    private int turnTime;
-    private int playerTime;
-
     private final String DEFAULT_PORT = "8080";
 
     protected boolean isServer;
@@ -76,8 +72,6 @@ public class InitialUI extends JPanel {
         this.playButton.setIcon(new ImageIcon(img));
         this.playButton.setText("");
         this.playButton.setEnabled(false);
-
-        firstPlayer = -1;
 
         gameUI = new GameUI();
 
@@ -175,11 +169,10 @@ public class InitialUI extends JPanel {
             rand.setSeed(System.currentTimeMillis());
             int choice = rand.nextInt(2);
             this.firstPlayComB.setSelectedIndex(choice);
+            System.out.println(choice);
             this.firstPlayComB.setEnabled(false);
-            firstPlayer = choice;
         } else {
             this.firstPlayComB.setEnabled(true);
-            firstPlayer = -1;
         }
     }
 
