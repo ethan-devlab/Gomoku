@@ -493,8 +493,8 @@ public class InitialUI extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.ipady = 5;
         InitialPanel.add(timePlayerLabel, gbc);
-        timeTurnComB = new JComboBox();
-        final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
+        timeTurnComB = new JComboBox<String>();
+        final DefaultComboBoxModel<String> defaultComboBoxModel1 = new DefaultComboBoxModel<String>();
         timeTurnComB.setModel(defaultComboBoxModel1);
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
@@ -502,7 +502,7 @@ public class InitialUI extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         InitialPanel.add(timeTurnComB, gbc);
-        timePlayerComB = new JComboBox();
+        timePlayerComB = new JComboBox<String>();
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = 3;
@@ -517,7 +517,7 @@ public class InitialUI extends JPanel {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.ipady = 5;
         InitialPanel.add(firstPlayerLabel, gbc);
-        firstPlayComB = new JComboBox();
+        firstPlayComB = new JComboBox<String>();
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 6;
@@ -550,7 +550,7 @@ public class InitialUI extends JPanel {
         gbc.gridy = 7;
         gbc.fill = GridBagConstraints.VERTICAL;
         InitialPanel.add(spacer7, gbc);
-        withdrawComB = new JComboBox();
+        withdrawComB = new JComboBox<String>();
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 9;
