@@ -30,3 +30,6 @@ bin/
 
 ### Class Files ###
 *.class
+
+### Icon Files ###
+*.pptx

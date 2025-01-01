@@ -7,6 +7,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -187,7 +188,7 @@ public class InitialUI extends JPanel {
     }
 
     public void setPlayButtonEnable(boolean enable) {
-        this.playButton.setVisible(enable);
+        this.playButton.setEnabled(enable);
     }
 
     public String getPlayerName() {
@@ -241,6 +242,15 @@ public class InitialUI extends JPanel {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Gomoku Game");
+            Path currentRelativePath = Path.of("");
+            String s = currentRelativePath.toAbsolutePath().toString();
+            String imageUrl = s + "\\src\\resources\\image\\icon.png";
+            File file = new File(imageUrl);
+            if (!file.exists()) {
+                imageUrl = s + "\\resources\\image\\icon.png";
+            }
+            frame.setIconImage(Toolkit.getDefaultToolkit().getImage(imageUrl));
+
             InitialUI initialUI = new InitialUI();
             frame.setContentPane(initialUI);
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

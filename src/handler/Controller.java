@@ -377,7 +377,8 @@ public class Controller {
             gameUI.gameBoardComponent.setCanPlay(false);
             gameUI.setGameStarted(false);
             if (gameUI.getCurrentFrame() != null) {
-                initUI.setPlayButtonEnable(true);
+                initUI.setPlayButtonEnable(false);
+                initUI.setClientState(false);
                 gameUI.getCurrentFrame().dispose();
             }
             if (!isServer) {

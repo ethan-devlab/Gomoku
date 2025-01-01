@@ -1,8 +1,0 @@
-if "package not found error" occurs, try compile the files with command below:
-
-Assume you are in /Gobang/src
-
-run "javac -cp . ui/InitialUI.java"
-then run "java ui/InitialUI.java"
-
-it should work.

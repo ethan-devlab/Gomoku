@@ -151,7 +151,7 @@ public class GameUI extends JPanel {
     }
 
     public void setPlayerName(String flag, String playerName) {
-        if (flag.equals("2")) {  // means the current player is WHITE
+        if (flag.equals("1")) {
             this.p1NameLabel.setText(playerName);
         } else {
             this.p2NameLabel.setText(playerName);
