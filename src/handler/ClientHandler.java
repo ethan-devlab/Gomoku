@@ -126,14 +126,12 @@ public class ClientHandler implements ActionListener {
 
                 controller.setGameData(data);
 
-//                listener = new ServerListener(client);
-//                listener.start();
                 controller.requestInit(GameFlags.CLIENT_INIT);
 
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                 String response;
                 while ((response = in.readLine()) != null) {
-                    System.out.println("Response:" + response);
+//                    System.out.println("Response:" + response);
                     controller.processMessage(response);
                     if (response.contains("This server is already connected with other client")) {
                         System.out.println(isAlive());
@@ -152,7 +150,7 @@ public class ClientHandler implements ActionListener {
                     isConnected = false;
                     interrupt();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
             }
 

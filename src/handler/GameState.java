@@ -1,16 +1,15 @@
 package handler;
 
 public class GameState {
-    private int[][] board;
+    private final int[][] board;
     private int currentPlayer;
-    private int withdrawCount;
-    private int lastRow; // Add last move tracking
+    private int lastRow;
     private int lastCol;
+    final int[][] DIRECTIONS = {{0,1}, {1,0}, {1,1}, {1,-1}};
     
     public GameState() {
         board = new int[15][15];
         currentPlayer = 1; // 1 for black, 2 for white
-        withdrawCount = 0; // Allow one withdraw per player
         lastRow = -1;
         lastCol = -1;
     }
@@ -21,22 +20,6 @@ public class GameState {
 
     public int getCurrentPlayer() {
         return currentPlayer;
-    }
-
-    public void setWithdrawCount(int withdrawCount) {
-        this.withdrawCount = withdrawCount;
-    }
-
-    public int getWithdrawCount() {
-        return this.withdrawCount;
-    }
-
-    public int getLastRow() {
-        return lastRow;
-    }
-
-    public int getLastCol() {
-        return lastCol;
     }
 
     public boolean isValidMove(int row, int col) {
@@ -52,9 +35,8 @@ public class GameState {
 
     public boolean checkWin(int row, int col) {
         int player = board[row][col];
-        int[][] directions = {{0,1}, {1,0}, {1,1}, {1,-1}}; // horizontal, vertical, diagonal
 
-        for (int[] dir : directions) {
+        for (int[] dir : DIRECTIONS) {
             int count = 1;
             
             // Check forward direction
@@ -84,15 +66,122 @@ public class GameState {
         return false;
     }
     
-    public boolean withdrawMove(boolean isSelf) {
-        if (withdrawCount > 0 || withdrawCount == -1 && lastRow != -1 && lastCol != -1) {
+    public boolean withdrawMove() {
+        if (lastRow != -1 && lastCol != -1) {
             board[lastRow][lastCol] = 0;
             currentPlayer = (currentPlayer == 1) ? 2 : 1;
-            if (isSelf && withdrawCount != -1) withdrawCount--;  // if is infinite or not self, pass
             lastRow = -1;
             lastCol = -1;
             return true;
         }
         return false;
+    }
+
+    public boolean isTieGame() {
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                if (board[i][j] == 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public String checkPatterns(int row, int col) {
+        int player = board[row][col];
+        String message = "";
+        for (int[] dir : DIRECTIONS) {
+            message = checkPattern(row, col, dir[0], dir[1], player);
+            if (!message.isEmpty()) {
+                break;
+            }
+        }
+        return message;
+    }
+
+    private String checkPattern(int row, int col, int dx, int dy, int player) {
+        int count = 1;
+        boolean leftBlocked = false;
+        boolean rightBlocked = false;
+        int patternType = 0;
+        String patternName;
+        String playerColor = (player == 1) ? "Black" : "White";
+
+        // Check left
+        for (int i = 1; i <= 4; i++) {
+            int newRow = row - dx * i;
+            int newCol = col - dy * i;
+            
+            if (newRow < 0 || newRow >= 15 || newCol < 0 || newCol >= 15) {
+                leftBlocked = true;
+                break;
+            }
+            
+            if (board[newRow][newCol] == 0) {
+                break;
+            }
+            
+            if (board[newRow][newCol] != player) {
+                leftBlocked = true;
+                break;
+            }
+            count++;
+        }
+
+        // Check right
+        for (int i = 1; i <= 4; i++) {
+            int newRow = row + dx * i;
+            int newCol = col + dy * i;
+            
+            if (newRow < 0 || newRow >= 15 || newCol < 0 || newCol >= 15) {
+                rightBlocked = true;
+                break;
+            }
+            
+            if (board[newRow][newCol] == 0) {
+                break;
+            }
+            
+            if (board[newRow][newCol] != player) {
+                rightBlocked = true;
+                break;
+            }
+            count++;
+        }
+
+        // Determine pattern type
+        if (count == 3) {
+            if (!leftBlocked && !rightBlocked) {
+                patternType = GameFlags.ALIVE_THREE;
+            } else if (!leftBlocked || !rightBlocked) {
+                patternType = GameFlags.DEAD_THREE;
+            }
+        } else if (count == 4) {
+            if (!leftBlocked && !rightBlocked) {
+                patternType = GameFlags.ALIVE_FOUR;
+            } else if (!leftBlocked || !rightBlocked) {
+                patternType = GameFlags.DEAD_FOUR;
+            }
+        }
+
+        switch (patternType) {
+            case GameFlags.DEAD_THREE:
+                patternName = "Dead Three";
+                break;
+            case GameFlags.ALIVE_THREE:
+                patternName = "Alive Three";
+                break;
+            case GameFlags.DEAD_FOUR:
+                patternName = "Dead Four";
+                break;
+            case GameFlags.ALIVE_FOUR:
+                patternName = "Alive Four";
+                break;
+            default:
+                return "";
+        }
+
+        return playerColor + " has formed " + patternName + "!";
     }
 }

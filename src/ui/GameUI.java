@@ -7,12 +7,14 @@ import handler.WithdrawHandler;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Objects;
 
 
 public class GameUI extends JPanel {
     private JPanel MainPanel;
     public GameBoardComponent gameBoardComponent;
+    private LoggerUI loggerUI;
     private JButton withdrawButton;
     private JPanel GameBoardPanel;
     private JButton restartButton;
@@ -37,7 +39,7 @@ public class GameUI extends JPanel {
     private JPanel InfoPanel;
     private JLabel trophyIcon;
 
-    private Image backgroundImage;
+    // private Image backgroundImage;
 
     private JFrame currentFrame;
 
@@ -58,8 +60,6 @@ public class GameUI extends JPanel {
 
     private int playerFlag = 1;
 
-    private int turnTime = -1;
-    private int playerTime = -1;
     private int withdrawCount = -1;
     private int firstPlayer = 1;
     private int player1WinRound = 0;
@@ -68,6 +68,7 @@ public class GameUI extends JPanel {
     private boolean isGameStarted = false;
 
     public Controller controller;
+    private ArrayList<String> gameDataList;
 
     public GameUI() {
         initInfoPanel();
@@ -139,6 +140,16 @@ public class GameUI extends JPanel {
         this.controller = controller;
     }
 
+    public void setLoggerUI(LoggerUI logger) {
+        this.loggerUI = logger;
+    }
+
+    public void setDataList(ArrayList<String> dataList) {
+        gameDataList = dataList;
+        this.loggerUI.clear();
+        this.loggerUI.appendText(gameDataList);
+    }
+
     public void setPlayerName(String flag, String playerName) {
         if (flag.equals("2")) {  // means the current player is WHITE
             this.p1NameLabel.setText(playerName);
@@ -175,15 +186,10 @@ public class GameUI extends JPanel {
         if (turn != -1) {
             this.p1TurnTime.setText(String.format("%ss", turnTime));
             this.p2TurnTime.setText(String.format("%ss", turnTime));
-            this.turnTime = turn;
             return;
         }
         this.p1TurnTime.setText("∞");
         this.p2TurnTime.setText("∞");
-    }
-
-    public int getTurnTime() {
-        return this.turnTime;
     }
 
     public void setPlayerTime(String playerTime) {
@@ -191,16 +197,12 @@ public class GameUI extends JPanel {
         if (playerT != -1) {
             this.p1PlayerTime.setText(String.format("%sm 0s", playerTime));
             this.p2PlayerTime.setText(String.format("%sm 0s", playerTime));
-            this.playerTime = playerT;
             return;
         }
         this.p1PlayerTime.setText("∞");
         this.p2PlayerTime.setText("∞");
     }
 
-    public int getPlayerTime() {
-        return this.playerTime;
-    }
 
     public void setGameStarted(boolean isStarted) {
         this.isGameStarted = isStarted;
@@ -239,12 +241,10 @@ public class GameUI extends JPanel {
 //    protected void paintComponent(Graphics g) {
 //        super.paintComponent(g);
 //        if (backgroundImage != null) {
-//            // Use RenderingHints for better image quality
 //            Graphics2D g2d = (Graphics2D) g;
 //            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 //                                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 //
-//            // Draw the background image scaled to fit the panel
 //            g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
 //        }
 //    }

@@ -29,6 +29,8 @@ public class WithdrawHandler implements ActionListener{
             }
             if (gameUI.getWithdrawCount() > 0 || gameUI.getWithdrawCount() == -1) {
                 gameUI.controller.sendMessage(GameFlags.WITHDRAW);
+                String player = gameUI.getPlayerFlag() == 1 ? "Black" : "White";
+                gameUI.controller.addGameData(player + " REQUEST WITHDRAW");
             }
             else {
                 JOptionPane.showMessageDialog(null, "No more withdrawal allowed.", "Withdraw",

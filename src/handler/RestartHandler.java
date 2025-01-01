@@ -22,6 +22,8 @@ public class RestartHandler implements ActionListener{
             System.out.println("Game Restart!");
             gameUI.controller.processMessage(GameFlags.RESTART_INIT);
             gameUI.controller.sendMessage(GameFlags.RESTART_INIT);
+            gameUI.controller.processMessage(GameFlags.RESTART);
+            gameUI.controller.sendMessage(GameFlags.RESTART);
         }
     }
 

@@ -36,7 +36,7 @@ public class PortChangeListener implements DocumentListener {
             try {
                 int port = Integer.parseInt(text);
                 serverHandler.setPORT(port);
-                startServer.setEnabled(port > 1024 && port <= 65535);
+                startServer.setEnabled(port > 1023 && port <= 65535);
             } catch (NumberFormatException ex) {
                 System.out.println("Wrong input: " + ex.getMessage());
             }

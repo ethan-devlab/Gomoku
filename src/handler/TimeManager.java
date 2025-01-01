@@ -3,7 +3,6 @@ package handler;
 import ui.GameBoardComponent;
 
 import javax.swing.*;
-import java.util.concurrent.TimeUnit;
 
 public class TimeManager {
     private final GameBoardComponent gameBoardComponent;
@@ -25,7 +24,7 @@ public class TimeManager {
         this.p1PlayerTime = p1PlayerTime;
         this.p2PlayerTime = p2PlayerTime;
 
-        turnTimer = new Timer(1000, e -> {
+        turnTimer = new Timer(1000, _ -> {
             if (turnTimeLeft > 0) {
                 turnTimeLeft--;
                 String message = GameFlags.TURN_TIME + ":" + turnTimeLeft;
@@ -39,7 +38,7 @@ public class TimeManager {
             }
         });
 
-        playerTimer = new Timer(1000, e -> {
+        playerTimer = new Timer(1000, _ -> {
             if (playerTimeLeft > 0) {
                 gameBoardComponent.setPlayerTime(--playerTimeLeft);
 //                double time = playerTimeLeft / 60.0 + playerTimeLeft % 60.0 / 10.0;

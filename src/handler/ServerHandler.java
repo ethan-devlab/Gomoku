@@ -18,29 +18,60 @@ public class ServerHandler implements ActionListener {
     private static ServerSocket serverSocket;
     private int PORT;
     private static ServerThread serverThread;
-    private JButton connectButton;
+    private static JButton connectButton;
+    private static JButton startServerButton;
 
     private static Controller controller;
 
-    public ServerHandler(InitialUI ui, String PORT, JButton connectButton, GameUI gameUi) {
+    public ServerHandler(InitialUI ui, String PORT, JButton _connectButton, GameUI gameUi) {
         initUi = ui;
         gameUI = gameUi;
         this.PORT = Integer.parseInt(PORT);
-        this.connectButton = connectButton;
-    }
-
-    public ServerHandler(InitialUI ui) {
-        initUi = ui;
-        this.PORT = 8080;
+        connectButton = _connectButton;
     }
 
     public void setPORT(int PORT) {
         this.PORT = PORT;
     }
 
+    private void setConnectButton() {
+        connectButton.setEnabled(!initUi.getServerState());
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        startServerButton = (JButton) e.getSource();
+
+        if (startServerButton.getText().equals("Start Server")) {
+            startServerButton.setText("Stop Server");
+            initUi.setServerState(true);
+            serverThread = new ServerThread(this.PORT);
+            serverThread.start();
+            initUi.setStatusText("Waiting player to join...");
+        }
+        else {
+            startServerButton.setText("Start Server");
+            if (serverThread.isAlive()) {
+                serverThread.interrupt();
+                serverThread = null;
+            }
+            System.out.println(serverSocket.isClosed() ? "Server is closed" : "Server is Opened");
+            try {
+                System.out.println("Stopping server...");
+                serverSocket.close();
+            } catch (IOException ie) {
+                System.out.println(ie.getMessage());
+            }
+            System.out.println(serverSocket.isClosed() ? "Server is closed" : "Server is Opened");
+            isClientConnected = false;
+            initUi.setServerState(false);
+            initUi.setStatusText("Disconnected and waiting for connection.");
+        }
+        setConnectButton();
+    }
+
     public static class HandleClient extends Thread {
         private final Socket client;
-        private boolean isGameStarted = false;
         private final ServerSocket serverSocket;
         private final Thread serverThread;
         public HandleClient(Socket client, ServerSocket serverSocket, Thread serverThread) throws IOException {
@@ -72,7 +103,7 @@ public class ServerHandler implements ActionListener {
                 String text;
 
                 while ((text = in.readLine()) != null) {
-                    System.out.println("Client sent: " + text);
+//                    System.out.println("Client sent: " + text);
                     if (text.equalsIgnoreCase("disConnected")) {
                         initUi.setClientState(false);
                         initUi.setStatusText("Waiting player to join...");
@@ -81,7 +112,7 @@ public class ServerHandler implements ActionListener {
                     controller.processMessage(text);
                 }
             }
-            catch(IOException e) {
+            catch (IOException e) {
                 System.out.println(e.getMessage());
             }
             finally {
@@ -90,6 +121,8 @@ public class ServerHandler implements ActionListener {
                     serverSocket.close();
                     interrupt();
                     serverThread.interrupt();
+                    startServerButton.setText("Start Server");
+                    connectButton.setEnabled(true);
                 } catch (IOException e) {
                     System.out.println(e.getMessage());
                 }
@@ -135,6 +168,10 @@ public class ServerHandler implements ActionListener {
                     }
                 }
             } catch (IOException ie) {
+                JOptionPane.showMessageDialog(null,
+                        ie.getMessage(),
+                        "Info",
+                        JOptionPane.INFORMATION_MESSAGE);
                 System.out.println(ie.getMessage());
             }
             finally {
@@ -148,39 +185,4 @@ public class ServerHandler implements ActionListener {
         }
     }
 
-    private void setConnectButton() {
-        connectButton.setEnabled(!initUi.getServerState());
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        JButton button = (JButton) e.getSource();
-
-        if (button.getText().equals("Start Server")) {
-            button.setText("Stop Server");
-            initUi.setServerState(true);
-            serverThread = new ServerThread(this.PORT);
-            serverThread.start();
-            initUi.setStatusText("Waiting player to join...");
-        }
-        else {
-            button.setText("Start Server");
-            if (serverThread.isAlive()) {
-                serverThread.interrupt();
-                serverThread = null;
-            }
-            System.out.println(serverSocket.isClosed() ? "Server is closed" : "Server is Opened");
-            try {
-                System.out.println("Stopping server...");
-                serverSocket.close();
-            } catch (IOException ie) {
-                System.out.println(ie.getMessage());
-            }
-            System.out.println(serverSocket.isClosed() ? "Server is closed" : "Server is Opened");
-            isClientConnected = false;
-            initUi.setServerState(false);
-            initUi.setStatusText("Disconnected and waiting for connection.");
-        }
-        setConnectButton();
-    }
 }

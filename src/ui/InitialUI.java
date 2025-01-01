@@ -8,9 +8,11 @@ import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Random;
 import java.text.DecimalFormat;
+import java.time.ZonedDateTime;
 
 
 public class InitialUI extends JPanel {
@@ -43,11 +45,11 @@ public class InitialUI extends JPanel {
     private JLabel withdrawLabel;
     String[] playerItems = new String[]{"Black", "White"};
 
-    private final String DEFAULT_PORT = "8080";
+    private final String DEFAULT_PORT = "8888";
 
-    protected boolean isServer;
-    protected boolean isConnected;
-    private boolean isEng;
+    private boolean isServer;
+    private boolean isConnected;
+    private final boolean DEMO = true;
 
     private TextChangeListener textChangeListener;
     private PortChangeListener portChangeListener;
@@ -60,11 +62,15 @@ public class InitialUI extends JPanel {
 
 
     public InitialUI() {
-        isEng = true;
         isConnected = false;
         isServer = false;
-        pTextF.setText("testing");
-        serverAddrTextF.setText("localhost");
+        if (DEMO) {
+            pTextF.setText("testing");
+            serverAddrTextF.setText("localhost");
+        } else {
+            pTextF.setText("");
+            serverAddrTextF.setText("");
+        }
 
         URL imageUrl = Objects.requireNonNull(getClass().getResource("/resources/image/right-arrow.png"));
         ImageIcon imgIcon = new ImageIcon(imageUrl);
@@ -80,6 +86,13 @@ public class InitialUI extends JPanel {
         initServer();
         initComboBox();
 
+        ZonedDateTime dateTime = ZonedDateTime.now();
+        System.out.println(dateTime);
+
+        Path currentRelativePath = Path.of("");
+        String s = currentRelativePath.toAbsolutePath().toString();
+        System.out.println(s);
+
         setLayout(new BorderLayout());
         add(panel1, BorderLayout.CENTER);
 
@@ -94,23 +107,20 @@ public class InitialUI extends JPanel {
 //    }
 
     private void initListener() {
-        this.randomPlayer.addActionListener(e -> changeListener());
+        this.randomPlayer.addActionListener(_ -> changeListener());
 
         textChangeListener = new TextChangeListener(this, this.playButton, this.pTextF);
         pTextF.getDocument().addDocumentListener(textChangeListener);
 
         statusfield.setText("Disconnected and waiting for connection.");
 
-        statusfield.addPropertyChangeListener(evt -> {
-            playButton.setEnabled(isConnected && !pTextF.getText().isEmpty());
-        });
+        statusfield.addPropertyChangeListener(_ -> playButton.setEnabled(isConnected && !pTextF.getText().isEmpty()));
 
-        startHandler = new StartHandler(gameUI);
+        startHandler = new StartHandler(gameUI, playButton);
         playButton.addActionListener(startHandler);
     }
 
     private void initClient() {
-//        connectBtn.setEnabled(false);
         serverPortTextF_C.setText(DEFAULT_PORT);
         clientHandler = new ClientHandler(
                 this,
@@ -176,6 +186,10 @@ public class InitialUI extends JPanel {
         }
     }
 
+    public void setPlayButtonEnable(boolean enable) {
+        this.playButton.setVisible(enable);
+    }
+
     public String getPlayerName() {
         return this.pTextF.getText().trim();
     }
@@ -213,11 +227,11 @@ public class InitialUI extends JPanel {
     }
 
     public JButton getConnectBtn() {
-        return (JButton) this.connectBtn;
+        return this.connectBtn;
     }
 
     public JButton getStartServerBtn() {
-        return (JButton) this.startServerBtn;
+        return this.startServerBtn;
     }
 
     public void setStatusText(String status) {
@@ -233,10 +247,6 @@ public class InitialUI extends JPanel {
             frame.setSize(550, 650);
             frame.setResizable(false);
             frame.setLocationRelativeTo(null); // make center
-            JMenuBar menuBar = new JMenuBar();
-            JMenu menu = new JMenu("Menu");
-            menuBar.add(menu);
-            frame.setJMenuBar(menuBar);
             frame.setVisible(true);
         });
     }

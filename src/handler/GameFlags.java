@@ -16,5 +16,10 @@ public class GameFlags {
     public static final String RESTART_INIT = "RESTART_INIT";
     public static final String BYE = "BYE";
     public static final String CAN_PLAY = "CAN_PLAY";
-    
+    public static final String TIE = "TIE";
+    public static final String PATTERN = "PATTERN";
+    public static final int DEAD_THREE = 1;
+    public static final int ALIVE_THREE = 2;
+    public static final int DEAD_FOUR = 3;
+    public static final int ALIVE_FOUR = 4;
 }

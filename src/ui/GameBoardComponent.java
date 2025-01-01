@@ -24,11 +24,7 @@ public class GameBoardComponent extends JPanel {
     private final ButtonHandler buttonHandler;
 
     private int player;
-    private TimeManager timeManager;
-    private JLabel p1TurnTime;
-    private JLabel p2TurnTime;
-    private JLabel p1PlayerTime;
-    private JLabel p2PlayerTime;
+    private final TimeManager timeManager;
     private int turnTime;
     private double playerTime;
 
@@ -43,10 +39,6 @@ public class GameBoardComponent extends JPanel {
         this.p1Flag = p1Flag;
         this.p2Flag = p2Flag;
         buttonHandler = new ButtonHandler(this);
-        this.p1TurnTime = p1TurnTime;
-        this.p2TurnTime = p2TurnTime;
-        this.p1PlayerTime = p1PlayerTime;
-        this.p2PlayerTime = p2PlayerTime;
         this.timeManager = new TimeManager(this, p1TurnTime, p2TurnTime, p1PlayerTime, p2PlayerTime);
         initializeButtons();
         initializeIcon();
@@ -174,6 +166,10 @@ public class GameBoardComponent extends JPanel {
 
     public void updatePlayerTime(double playerTime) {
         timeManager.setPlayerTime(playerTime);
+    }
+
+    public void stopTimer() {
+        timeManager.stopAll();
     }
 
     public void updateGameBoard(int player, int row, int col) {

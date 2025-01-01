@@ -1,6 +1,7 @@
 package handler;
 
 import ui.GameUI;
+import ui.LoggerUI;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -9,8 +10,10 @@ import java.awt.event.ActionListener;
 public class StartHandler implements ActionListener {
 
     private final GameUI gameUI;
-    public StartHandler(GameUI gameUI) {
+    private final JButton startButton;
+    public StartHandler(GameUI gameUI, JButton startButton) {
         this.gameUI = gameUI;
+        this.startButton = startButton;
     }
 
     @Override
@@ -20,11 +23,23 @@ public class StartHandler implements ActionListener {
             gameUI.setCurrentFrame(frame);
             gameUI.setGameStarted(true);
             gameUI.gameBoardComponent.setCanPlay(gameUI.gameBoardComponent.getCanPlay());
+            LoggerUI loggerUI = new LoggerUI();
+            JMenuBar menuBar = new JMenuBar();
+            JMenu menu = new JMenu("Menu");
+            JMenuItem infoUI = new JMenuItem("Game Info");
+            infoUI.addActionListener(_ -> loggerUI.setVisible(true));
+            gameUI.setLoggerUI(loggerUI);
+            gameUI.controller.setIsLoggerInit(true);
+            gameUI.setDataList(gameUI.controller.getGameDataList());
             frame.setContentPane(gameUI);
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
             frame.setSize(800, 800);
+            menu.add(infoUI);
+            menuBar.add(menu);
+            frame.setJMenuBar(menuBar);
             frame.setLocationRelativeTo(null); // make center
             frame.setVisible(true);
+            startButton.setEnabled(false);
         });
     }
 

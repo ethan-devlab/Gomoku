@@ -5,11 +5,10 @@ import ui.InitialUI;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.*;
 
 public class TextChangeListener implements DocumentListener {
     private final InitialUI initUI;
-    private JTextField pTextF;
+    private final JTextField pTextF;
     private final JButton startButton;
 
     public TextChangeListener(InitialUI initUI, JButton startButton, JTextField p1TextF) {

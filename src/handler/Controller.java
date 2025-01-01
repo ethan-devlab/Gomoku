@@ -4,7 +4,8 @@ import ui.*;
 
 import java.io.*;
 import java.net.Socket;
-import java.security.interfaces.RSAPrivateCrtKey;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
 
 public class Controller {
@@ -12,25 +13,34 @@ public class Controller {
     private static GameUI gameUI;
     private PrintWriter out;
     private BufferedReader in;
-    private Socket socket;
-    private boolean isServer;
+    private final Socket socket;
+    private final boolean isServer;
     private boolean isGameStarted;
     private boolean isWin;
+    private boolean isLoggerInit;
     private static GameData gameData;
     protected GameState gameState;
 
     private int lastRow, lastCol;
-    
+
+    private final ArrayList<String> gameDataList;
+
+
     public Controller(InitialUI ui, GameUI gameUi, Socket socket, boolean isServer) throws IOException {
         isGameStarted = false;
         isWin = false;
+        isLoggerInit = false;
         initUI = ui;
         gameUI = gameUi;
         gameUI.setController(this);
         gameUI.gameBoardComponent.setController(this);
         this.socket = socket;
         this.isServer = isServer;
+        ZonedDateTime dateTime = ZonedDateTime.now();
         gameState = new GameState();
+        gameDataList = new ArrayList<>();
+        gameDataList.add("GAME INITIALIZED AT " + dateTime);
+        gameDataList.add(socket.toString());
         initInputOutput(this.socket);
     }
 
@@ -44,11 +54,21 @@ public class Controller {
     }
 
     public void requestInit(String message) {
+        gameDataList.add(message);
+        updateGameDataList();
         out.println(message);
     }
 
     public void setGameData(GameData data) {
         gameData = data;
+    }
+
+    public void setIsLoggerInit(boolean isLoggerInit) {
+        this.isLoggerInit = isLoggerInit;
+    }
+
+    public void addGameData(String data) {
+        gameDataList.add(data);
     }
 
     public void processMessage(String message) {
@@ -79,11 +99,18 @@ public class Controller {
                 out.println(GameFlags.START);
                 break;
             case GameFlags.START:
+                gameDataList.add("START");
+                updateGameDataList();
                 handleStart();
+
                 break;
             case GameFlags.WITHDRAW:
                 if (data.equals("OK")) requestWithdraw();
-                else if (data.equals("DENIED")) gameUI.showMessage("Withdraw Denied");
+                else if (data.equals("DENIED")) {
+                    gameUI.showMessage("Withdraw Denied");
+                    gameDataList.add("REQUEST RESULT: DENIED");
+                    updateGameDataList();
+                }
                 else handleWithdraw();
                 break;
             case GameFlags.CAN_PLAY:
@@ -94,6 +121,12 @@ public class Controller {
                 break;
             case GameFlags.LOSE:
                 handleLose(data);
+                break;
+            case GameFlags.TIE:
+                handleTie();
+                break;
+            case GameFlags.PATTERN:
+                handlePattern(data);
                 break;
             case GameFlags.RESTART_INIT:
                 restartInit();
@@ -114,6 +147,8 @@ public class Controller {
     }
 
     private void handleUIData(String data) {
+        gameDataList.add("INIT DATA: " + data);
+        updateGameDataList();
         String[] initData = data.split("\\|");
         String flag = initData[0];
         String name = initData[1];
@@ -156,13 +191,15 @@ public class Controller {
         gameUI.setFirstPlayer(firstPlayer);
         gameUI.setWithdrawCount(withdrawCount);
         gameUI.setWinRound(-1);
-        gameState.setWithdrawCount(Integer.parseInt(withdrawCount));
+//        gameState.setWithdrawCount(Integer.parseInt(withdrawCount));
         gameUI.gameBoardComponent.setIsBlack(isBlack);
         gameUI.gameBoardComponent.setPlayer();
         gameUI.gameBoardComponent.setTurnTime(Integer.parseInt(turnTime));
         gameUI.gameBoardComponent.setPlayerTime(!playerTime.equals("-1") ? Double.parseDouble(playerTime) * 60 : -1);
         gameUI.gameBoardComponent.setConstantTime(Integer.parseInt(turnTime));
         out.println(GameFlags.READY);
+        gameDataList.add("READY");
+        updateGameDataList();
     }
 
     private void handleMove(String moveData) {
@@ -173,22 +210,32 @@ public class Controller {
 
         if (gameState.isValidMove(row, col)) {
             gameState.setCurrentPlayer(player);
+            String playerColor = (player == 1) ? "Black" : "White";
             gameState.makeMove(row, col);
+            String message = playerColor + " placed stone at " + Character.toString(col + 'A') + (row + 1);
+            gameDataList.add(message);
+            updateGameDataList();
             lastRow = row;
             lastCol = col;
             updateGameBoard(player, row, col);
 
             if (!isWin) {
                 if (gameState.checkWin(row, col)) {
-                    isWin = true;
-                    String winner = (player == 1) ? "Black" : "White";
                     gameUI.setWinRound(player);
-                    gameUI.showMessage(winner + " wins!");
+                    handleWin(playerColor);
+                    out.println("WIN:" + playerColor);
+                }
+                else if (gameState.isTieGame()) {
+                    handleTie();
+                    out.println(GameFlags.TIE);
+                } 
+                else {
+                    String pattern = gameState.checkPatterns(row, col);
                     gameUI.gameBoardComponent.setCanPlay(false);
-                    out.println("WIN:" + player);
-                } else {
-                    gameUI.gameBoardComponent.setCanPlay(false);
-                    if (player == gameUI.getPlayerFlag()) out.println("CAN_PLAY");
+                    if (player == gameUI.getPlayerFlag()) {
+                        out.println("CAN_PLAY");
+                        if (!pattern.isEmpty()) out.println("PATTERN:" + pattern);
+                    }
                 }
             }
         }
@@ -205,27 +252,37 @@ public class Controller {
     }
 
     private void handleWithdraw() {
-        if (gameState.withdrawMove(false)) {
+        String player = gameState.getCurrentPlayer() == 1 ? "White" : "Black";
+        gameDataList.add(player + " REQUEST WITHDRAW");
+        if (gameState.withdrawMove()) {
             gameUI.gameBoardComponent.clearPosition(lastRow, lastCol);
             gameUI.gameBoardComponent.setFlagIcon(gameState.getCurrentPlayer());
             gameUI.gameBoardComponent.setCanPlay(false);
             out.println("CAN_PLAY");
             out.println("WITHDRAW:OK");
+            gameDataList.add("REQUEST RESULT: OK");
         }
         else {
             out.println("WITHDRAW:DENIED");
+            gameDataList.add("REQUEST RESULT: DENIED");
         }
+        updateGameDataList();
     }
 
     private void requestWithdraw() {
         if (gameUI.gameBoardComponent.getCanPlay()) {
-            if (gameState.withdrawMove(true)) {
+            if (gameState.withdrawMove()) {
                 gameUI.gameBoardComponent.setFlagIcon(gameState.getCurrentPlayer());
                 gameUI.gameBoardComponent.clearPosition(lastRow, lastCol);
                 gameUI.setWithdrawCount(gameUI.getWithdrawCount() - 1);
+                gameDataList.add("REQUEST RESULT: OK");
             }
-            else gameUI.showMessage("Withdraw failed");
+            else {
+                gameUI.showMessage("Withdraw failed");
+                gameDataList.add("REQUEST RESULT: FAILED");
+            }
         }
+        updateGameDataList();
     }
 
     private void updateGameBoard(int player, int row, int col) {
@@ -233,22 +290,43 @@ public class Controller {
         gameUI.gameBoardComponent.setCanPlay(false);
     }
 
-    private void handleWin(String winData) {
-        int winner = Integer.parseInt(winData);
-        String winnerText = (winner == 1) ? "Black" : "White";
+    private void handleWin(String winner) {
         if (!isWin) {
-            gameUI.showMessage(winnerText + " wins!");
-            gameUI.gameBoardComponent.setCanPlay(false);
             isWin = true;
+            String message = winner + " wins!";
+            gameUI.showMessage(message);
+            gameUI.gameBoardComponent.setCanPlay(false);
+            gameDataList.add(message);
+            updateGameDataList();
         }
     }
 
     private void handleLose(String loseData) {
         String loser = (Integer.parseInt(loseData) == 1) ? "Black" : "White";
+        String winner = loser.equals("Black") ? "White" : "Black";
         if (!isWin) {
             gameUI.showMessage(loser + " lose! You win!");
             gameUI.gameBoardComponent.setCanPlay(false);
             isWin = true;
+            gameDataList.add(loser + " lose! " + winner + " win!");
+            updateGameDataList();
+        }
+    }
+
+    private void handleTie() {
+        if (!isWin) {
+            gameUI.showMessage("Tie Game!");
+            gameUI.gameBoardComponent.setCanPlay(false);
+            gameDataList.add("TIE GAME");
+            updateGameDataList();
+        }
+    }
+
+    private void handlePattern(String pattern) {
+        if (!isWin) {
+            gameDataList.add(pattern);
+            gameUI.showMessage(pattern);
+            updateGameDataList();
         }
     }
 
@@ -263,16 +341,31 @@ public class Controller {
     }
 
     private void restartInit() {
+        ZonedDateTime dateTime = ZonedDateTime.now();
+        gameDataList.add("");
+        gameDataList.add("RESTART AT " + dateTime);
+        updateGameDataList();
+        gameUI.gameBoardComponent.stopTimer();
+        gameUI.gameBoardComponent.setCanPlay(false);
+        isGameStarted = false;
         gameState = new GameState();
         isWin = false;
-        isGameStarted = false;
-        sendMessage(GameFlags.RESTART);
     }
 
     private void handleRestart() {
         if (isServer) requestInit(GameFlags.SERVER_INIT);
         else requestInit(GameFlags.CLIENT_INIT);
         gameUI.gameBoardComponent.clearButtonIcons();
+    }
+
+    private void updateGameDataList() {
+        if (isLoggerInit) {
+            gameUI.setDataList(gameDataList);
+        }
+    }
+
+    public ArrayList<String> getGameDataList() {
+        return gameDataList;
     }
 
     public void closeConnection() {
@@ -283,7 +376,10 @@ public class Controller {
             gameUI.gameBoardComponent.clearButtonIcons();
             gameUI.gameBoardComponent.setCanPlay(false);
             gameUI.setGameStarted(false);
-            if (gameUI.getCurrentFrame() != null) gameUI.getCurrentFrame().dispose();
+            if (gameUI.getCurrentFrame() != null) {
+                initUI.setPlayButtonEnable(true);
+                gameUI.getCurrentFrame().dispose();
+            }
             if (!isServer) {
                 initUI.getConnectBtn().setText("Connect");
                 initUI.getStartServerBtn().setEnabled(true);
@@ -295,7 +391,7 @@ public class Controller {
                 initUI.setStatusText("Disconnected and waiting for connection.");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 }

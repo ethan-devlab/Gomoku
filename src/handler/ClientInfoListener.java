@@ -5,10 +5,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 public class ClientInfoListener implements DocumentListener {
-    private JTextField addrTextF;
-    private JTextField portTextF;
-    private JButton connectButton;
-    private ClientHandler clientHandler;
+    private final JTextField addrTextF;
+    private final JTextField portTextF;
+    private final JButton connectButton;
+    private final ClientHandler clientHandler;
     public ClientInfoListener(JTextField addrTextF, JTextField portTextF, JButton connectButton,
                               ClientHandler clientHandler) {
         this.addrTextF = addrTextF;
