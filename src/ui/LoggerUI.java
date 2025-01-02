@@ -41,7 +41,7 @@ public class LoggerUI extends JFrame {
     }
 
     private void init() {
-        setTitle("Logger");
+        setTitle("Gomoku Game Logger");
         setContentPane(panel1);
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         setSize(600, 400);

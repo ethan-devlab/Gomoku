@@ -51,7 +51,7 @@ public class InitialUI extends JPanel {
 
     private boolean isServer;
     private boolean isConnected;
-    private final boolean DEMO = true;
+    private final boolean DEMO = false;
 
     private TextChangeListener textChangeListener;
     private PortChangeListener portChangeListener;
@@ -70,8 +70,9 @@ public class InitialUI extends JPanel {
             pTextF.setText("testing");
             serverAddrTextF.setText("localhost");
         } else {
-            pTextF.setText("");
+            pTextF.setText("Player");
             serverAddrTextF.setText("");
+            connectBtn.setEnabled(false);
         }
 
         URL imageUrl = Objects.requireNonNull(getClass().getResource("/resources/image/right-arrow.png"));

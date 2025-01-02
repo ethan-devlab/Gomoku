@@ -44,7 +44,7 @@ public class ClientInfoListener implements DocumentListener {
                 int port = Integer.parseInt(portText);
                 clientHandler.setADDRESS(addrText);
                 clientHandler.setPORT(port);
-                connectButton.setEnabled(port > 1024 && port <= 65535);
+                connectButton.setEnabled(port > 1023 && port <= 65535);
             } catch (NumberFormatException ex) {
                 System.out.println("Wrong input: " + ex.getMessage());
             }

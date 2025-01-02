@@ -62,7 +62,7 @@ public class ClientHandler implements ActionListener {
                 if (client != null && clientThread != null) {
                     button.setText("Disconnect");
                     initUI.setClientState(true);
-                    statusField.setText("Connected to server: Address(" + ADDRESS + ") " + "Port(" + PORT + ")");
+                    statusField.setText("Connected to server: " + client);
                     JOptionPane.showMessageDialog(null, "Connect to the server.",
                             "Connection Success", JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -134,9 +134,8 @@ public class ClientHandler implements ActionListener {
 //                    System.out.println("Response:" + response);
                     controller.processMessage(response);
                     if (response.contains("This server is already connected with other client")) {
-                        System.out.println(isAlive());
                         interrupt();
-                        System.out.println(isAlive());
+                        break;
                     }
                 }
 
@@ -146,6 +145,7 @@ public class ClientHandler implements ActionListener {
                 try {
                     if (client != null) {
                         client.close();
+                        client = null;
                     }
                     isConnected = false;
                     interrupt();
