@@ -1,4 +1,5 @@
-# A simple online Gomoku game built by Java
+# Gomoku
+A simple online Gomoku game built by Java.
 
 ## Credits
 <a href="https://www.flaticon.com/free-icons/clock" title="clock icons">Clock icons created by justicon - Flaticon</a><br>
@@ -9,4 +10,5 @@
 <a href="https://www.flaticon.com/free-icons/user" title="user icons">User icons created by Freepik - Flaticon</a><br>
 
 ## Copyright Claim
-"icon.png" is designed and built by the author, CHENG (Ethan Chan), contribution is needed for personal use. For commercial use, contact us for further information.
+The icon "icon.png" was designed and developed by the author, CHENG (Ethan Chan), contribution is needed for personal use. For commercial use, you can contact the author for more details.
+
