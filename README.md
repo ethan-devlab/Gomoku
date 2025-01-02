@@ -1,4 +1,4 @@
-# A simple online Gomoku game built by Java**
+# A simple online Gomoku game built by Java
 
 ## Credits
 <a href="https://www.flaticon.com/free-icons/clock" title="clock icons">Clock icons created by justicon - Flaticon</a><br>
