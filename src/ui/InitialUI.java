@@ -16,6 +16,7 @@ import java.text.DecimalFormat;
 import java.time.ZonedDateTime;
 
 
+
 public class InitialUI extends JPanel {
     private JPanel panel1;
     private JPanel ServerPanel;
@@ -168,7 +169,7 @@ public class InitialUI extends JPanel {
             this.firstPlayComB.addItem(item);
         }
 
-        String[] withdrawItems = new String[]{"1", "2", "3", "4", "5", "∞"};
+        String[] withdrawItems = new String[]{"0", "1", "2", "3", "4", "5", "∞"};
         for (String item : withdrawItems) {
             this.withdrawComB.addItem(item);
         }

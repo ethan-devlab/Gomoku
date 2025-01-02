@@ -4,8 +4,11 @@ import ui.GameUI;
 import ui.LoggerUI;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.nio.file.Path;
 
 public class StartHandler implements ActionListener {
 
@@ -20,10 +23,19 @@ public class StartHandler implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Gomoku Game");
+            Path currentRelativePath = Path.of("");
+            String s = currentRelativePath.toAbsolutePath().toString();
+            String imageUrl = s + "\\src\\resources\\image\\icon.png";
+            File file = new File(imageUrl);
+            if (!file.exists()) {
+                imageUrl = s + "\\resources\\image\\icon.png";
+            }
+            frame.setIconImage(Toolkit.getDefaultToolkit().getImage(imageUrl));
             gameUI.setCurrentFrame(frame);
             gameUI.setGameStarted(true);
             gameUI.gameBoardComponent.setCanPlay(gameUI.gameBoardComponent.getCanPlay());
             LoggerUI loggerUI = new LoggerUI();
+            loggerUI.setIconImage(Toolkit.getDefaultToolkit().getImage(imageUrl));
             JMenuBar menuBar = new JMenuBar();
             JMenu menu = new JMenu("Menu");
             JMenuItem infoUI = new JMenuItem("Game Info");

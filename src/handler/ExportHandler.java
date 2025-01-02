@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.time.ZonedDateTime;
 
 public class ExportHandler implements ActionListener {
 
@@ -29,6 +30,7 @@ public class ExportHandler implements ActionListener {
             String filename = fileChooser.getSelectedFile().getAbsolutePath() + filter.getDescription();
             try (PrintWriter logger = new PrintWriter(filename)) {
                 this.loggerUI.getDataList().forEach(logger::println);
+                logger.println("\nDATA SAVED AT " + ZonedDateTime.now());
                 System.out.println("Data saved to " + filename);
                 JOptionPane.showMessageDialog(null,
                         "Data saved to " + filename,

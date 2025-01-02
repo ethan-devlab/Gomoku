@@ -274,7 +274,7 @@ public class Controller {
             if (gameState.withdrawMove()) {
                 gameUI.gameBoardComponent.setFlagIcon(gameState.getCurrentPlayer());
                 gameUI.gameBoardComponent.clearPosition(lastRow, lastCol);
-                gameUI.setWithdrawCount(gameUI.getWithdrawCount() - 1);
+                if (gameUI.getWithdrawCount() != -1) gameUI.setWithdrawCount(gameUI.getWithdrawCount() - 1);
                 gameDataList.add("REQUEST RESULT: OK");
             }
             else {
