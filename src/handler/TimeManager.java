@@ -1,10 +1,12 @@
 package handler;
 
 import ui.GameBoardComponent;
+import ui.GameUI;
 
 import javax.swing.*;
 
 public class TimeManager {
+    private final GameUI gameUI;
     private final GameBoardComponent gameBoardComponent;
     private Timer turnTimer;
     private Timer playerTimer;
@@ -17,7 +19,8 @@ public class TimeManager {
     private final JLabel p2PlayerTime;
     
     public TimeManager(GameBoardComponent gameBoardComponent, JLabel p1TurnTime, JLabel p2TurnTime,
-                       JLabel p1PlayerTime, JLabel p2PlayerTime) {
+                       JLabel p1PlayerTime, JLabel p2PlayerTime, GameUI gameUI) {
+        this.gameUI = gameUI;
         this.gameBoardComponent = gameBoardComponent;
         this.p1TurnTime = p1TurnTime;
         this.p2TurnTime = p2TurnTime;
@@ -34,6 +37,7 @@ public class TimeManager {
                 gameBoardComponent.setCanPlay(false);
                 gameBoardComponent.controller.sendMessage(GameFlags.LOSE + ":" + gameBoardComponent.getPlayer());
                 showTimeout("TimeOut! You lose!");
+                gameUI.setWinRound(gameBoardComponent.getPlayer() == 1 ? 2 : 1);
                 stopAll();
             }
         });
@@ -49,6 +53,7 @@ public class TimeManager {
                 gameBoardComponent.setCanPlay(false);
                 gameBoardComponent.controller.sendMessage(GameFlags.LOSE + ":" + gameBoardComponent.getPlayer());
                 showTimeout("TimeOut! You lose!");
+
                 stopAll();
             }
         });

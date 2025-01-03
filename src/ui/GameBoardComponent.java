@@ -39,7 +39,8 @@ public class GameBoardComponent extends JPanel {
         this.p1Flag = p1Flag;
         this.p2Flag = p2Flag;
         buttonHandler = new ButtonHandler(this);
-        this.timeManager = new TimeManager(this, p1TurnTime, p2TurnTime, p1PlayerTime, p2PlayerTime);
+        this.timeManager = new TimeManager(this, p1TurnTime, p2TurnTime, p1PlayerTime,
+                                           p2PlayerTime, gameUI);
         initializeButtons();
         initializeIcon();
     }

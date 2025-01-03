@@ -307,6 +307,7 @@ public class Controller {
         if (!isWin) {
             gameUI.showMessage(loser + " lose! You win!");
             gameUI.gameBoardComponent.setCanPlay(false);
+            gameUI.setWinRound(gameState.getCurrentPlayer() == 1 ? 2 : 1);
             isWin = true;
             gameDataList.add(loser + " lose! " + winner + " win!");
             updateGameDataList();
