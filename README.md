@@ -1,5 +1,14 @@
 # Gomoku
-A simple online Gomoku game built by Java.
+A simple online Gomoku game written in Java.
+
+## Environment
+Win11 + JDK 22 (Java SE Development Kit 22)
+<a href="https://www.oracle.com/java/technologies/javase/jdk22-archive-downloads.html">JDK 22</a>
+
+## Compile and Run
+1. Assume you are in /Gomoku/src
+2. Run "javac -cp . ui/InitialUI.java" in terminal or cmd
+3. Run "java ui/InitialUI.java" in terminal or cmd
 
 ## Credits
 <a href="https://www.flaticon.com/free-icons/clock" title="clock icons">Clock icons created by justicon - Flaticon</a><br>
@@ -10,5 +19,5 @@ A simple online Gomoku game built by Java.
 <a href="https://www.flaticon.com/free-icons/user" title="user icons">User icons created by Freepik - Flaticon</a><br>
 
 ## Copyright Claim
-The icon "icon.png" was designed and developed by the author, CHENG (Ethan Chan), contribution is needed for personal use. For commercial use, you can contact the author for more details.
+The icon "icon.png" was designed and developed by the author, CHENG (ethan-devlab), contribution is needed for personal use. For commercial use, contact the author for more details.
 
