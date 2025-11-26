@@ -6,9 +6,12 @@ Win11 + JDK 23 (Java SE Development Kit 23)
 <a href="https://www.oracle.com/java/technologies/javase/jdk23-archive-downloads.html">JDK 23</a>
 
 ## Compile and Run
-1. Assume you are in /Gomoku/src
-2. Run `javac -cp . ui/InitialUI.java` in terminal or cmd
-3. Run `java ui.InitialUI` in terminal or cmd
+```
+git clone https://github.com/ethan-devlab/Gomoku.git
+cd Gomoku/src
+javac -cp . ui/InitialUI.java
+java ui.InitialUI
+```
 
 ## Credits
 <a href="https://www.flaticon.com/free-icons/clock" title="clock icons">Clock icons created by justicon - Flaticon</a><br>
