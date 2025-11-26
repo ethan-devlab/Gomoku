@@ -7,8 +7,8 @@ Win11 + JDK 23 (Java SE Development Kit 23)
 
 ## Compile and Run
 1. Assume you are in /Gomoku/src
-2. Run "javac -cp . ui/InitialUI.java" in terminal or cmd
-3. Run "java ui/InitialUI.java" in terminal or cmd
+2. Run `javac -cp . ui/InitialUI.java` in terminal or cmd
+3. Run `java ui.InitialUI` in terminal or cmd
 
 ## Credits
 <a href="https://www.flaticon.com/free-icons/clock" title="clock icons">Clock icons created by justicon - Flaticon</a><br>
